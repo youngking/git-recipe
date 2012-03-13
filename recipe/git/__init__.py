@@ -1,4 +1,19 @@
 # -*- coding: utf-8 -*-
+"""
+git-recipe is a small recipe that allows you to use git
+repositories 
+
+[buildout]
+parts = data
+
+[data]
+recipe = gitrecipe
+repository = git://example.com/my-git-repo.git
+rev = origin/redevlop-branch
+as_egg = true
+
+"""
+
 import logging, os, zc.buildout, subprocess, re, shutil
 
 
@@ -16,6 +31,8 @@ class GitRecipe(object):
         if 'ref' in options:
             self.ref = options.get('ref', 'origin/master')
 
+        self.as_egg = options.get('as_egg', 'false').lower() == 'true'
+
         # determine repository name
         match = re.search('\/(?P<repo_name>[a-zA-Z0-9-]*)(.git)?$', self.url)
         if match:
@@ -24,6 +41,7 @@ class GitRecipe(object):
         else:
             raise zc.buildout.UserError('Can not find repository name')
         self.options['location'] = os.path.join(buildout['buildout']['parts-directory'], self.repo_path)
+        self.paths = options.get('paths', None)
 
     def git(self, operation, args, quiet=True):
         if quiet:
@@ -54,6 +72,7 @@ class GitRecipe(object):
         '''Clone repository and checkout to version'''
         # go to parts directory
         os.chdir(self.buildout['buildout']['parts-directory'])
+        _installed = False
 
         try:
 
@@ -61,6 +80,7 @@ class GitRecipe(object):
                 if self.check_same():
                     # If the same repository is here, just fetch new data and checkout to revision
                     # aka update ;)
+                    _installed = True
                     os.chdir(self.repo_path)
                     self.git('fetch', [self.url, ])
                     if 'rev' in self.options:
@@ -68,25 +88,31 @@ class GitRecipe(object):
                         self.git('checkout', [self.ref, ])
                         # return to root directory
                         os.chdir(self.buildout['buildout']['directory'])
-                        return self.options['location']
+                        #return self.options['location']
 
                 else:
                     # if repository exists but not the same, delete all files there
                     shutil.rmtree(self.repo_path, ignore_errors=True)
+                    _installed = False
 
             # in fact, the install
-            os.chdir(self.buildout['buildout']['parts-directory'])
-            self.git('clone', [self.url, ])
-            # if revision is given, checkout to revision 
-            if 'rev' in self.options:
-                os.chdir(self.options['location'])
-                self.git('checkout', [self.ref, ])
+            if not _installed:
+                os.chdir(self.buildout['buildout']['parts-directory'])
+                self.git('clone', [self.url, ])
+                # if revision is given, checkout to revision 
+                if 'rev' in self.options:
+                    os.chdir(self.options['location'])
+                    self.git('checkout', [self.ref, ])
+
 
         except zc.buildout.UserError:
             # should manually clean files because buildout thinks that no files created
             shutil.rmtree(self.options['location'])
             raise
 
+
+        if self.as_egg:
+            self._install_as_egg()
         # return to root directory
         os.chdir(self.buildout['buildout']['directory'])
         return self.options['location']
@@ -100,6 +126,8 @@ class GitRecipe(object):
             # if revision is given, checkout to revision
             if 'rev' in self.options:
                 self.git('checkout', [self.ref, ])
+            if self.as_egg:
+                self._install_as_egg()
         else:
             self.install()
 
@@ -107,3 +135,17 @@ class GitRecipe(object):
         os.chdir(self.buildout['buildout']['directory'])
         return self.options['location']
 
+    def _install_as_egg(self):
+        """
+        Install clone as development egg.
+        """
+        def _install(path, target):
+            zc.buildout.easy_install.develop(path, target)
+
+        target = self.buildout['buildout']['develop-eggs-directory']
+        if self.paths:
+            for path in self.paths.split():
+                path = os.path.join(self.options['location'], path.strip())
+                _install(path, target)
+        else:
+            _install(self.options['location'], target)

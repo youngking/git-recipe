@@ -2,13 +2,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="gitrecipe",
-    version='0.0.2',
+    name="git-recipe",
+    version='0.0.1',
     description='Simple buildout recipe for downloading git repositories. It uses system git command and its syntax',
-    author='Ivan Gromov',
-    author_email='summer.is.gone@gmail.com',
-    url='http://github.com/summerisgone/gitrecipe',
-    download_url='http://github.com/summerisgone/gitrecipe/zipball/0.1',
+    author='Young King',
+    author_email='yanckin@gmail.com',
+    url='http://github.com/youngking/git-recipe',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Buildout',

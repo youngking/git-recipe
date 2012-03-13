@@ -1,4 +1,4 @@
-Welcome to gitrecipe doc page
+Welcome to git-recipe doc page
 
 Usage
 -----
@@ -13,6 +13,7 @@ in configuration. You can use recipe like this: ::
     recipe = gitrecipe
     repository = git://example.com/my-git-repo.git
     rev = origin/redevlop-branch
+    as_egg = True
 
 Options
 -------
@@ -21,27 +22,13 @@ Options
 
 *ref* of *rev* - git reference_ wich you want to checkout
 
-Notes
-`````
 
-*rev* option leaved for compatibility with ``zerokspot.recipe.git``.
-It is better to use *ref* parameter, because it corresponds Git terminology
-
-Since 0.0.2 recipe do check existing repository while install and update.
-Repository origin url must be the same as given in **rev** option.
-Otherwise repository will be deleted and cloned again.
+*as_egg* - Set to True if you want the checkout to be registered as a
+           development egg in your buildout
 
 
 About
 -----
 
-I've used recipe ``zerokspot.recipe.git``, but as for me, it too complex and has some disadvantages:
-
-- it does not allow commit from the source folder, default remote is local copy in downloads
-- it does not allow to specify the tag or branch of the repository, only revision hash
-
-So I wrote my own git recipe with compatible options. You can choose this or that.
-
-
-.. _PYPI: http://pypi.python.org/pypi
-.. _reference: http://book.git-scm.com/7_git_references.html 
+This is a fork of ``gitrecipe`` , which doesn't support 
+the as_egg feature of ``zerokspot.recipe.git`` .
