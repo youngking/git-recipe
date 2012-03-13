@@ -10,7 +10,7 @@ in configuration. You can use recipe like this: ::
     parts = data
     
     [data]
-    recipe = gitrecipe
+    recipe = git-recipe
     repository = git://example.com/my-git-repo.git
     rev = origin/redevlop-branch
     as_egg = True
