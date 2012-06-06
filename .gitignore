@@ -1,2 +1,4 @@
 *.pyc
-gitrecipe.egg-info/
+dist/
+build/
+*.egg-info
