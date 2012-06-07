@@ -34,7 +34,7 @@ class GitRecipe(object):
         self.as_egg = options.get('as_egg', 'false').lower() == 'true'
 
         # determine repository name
-        match = re.search('\/(?P<repo_name>[a-zA-Z0-9-]*)(.git)?$', self.url)
+        match = re.search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', self.url)
         if match:
             repo_name = match.groupdict()['repo_name']
             self.repo_path = os.path.join(self.buildout['buildout']['parts-directory'], repo_name)

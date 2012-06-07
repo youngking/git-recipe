@@ -40,4 +40,5 @@ the as_egg feature of ``zerokspot.recipe.git`` .
 CHANGES
 ---------
 
+- 0.0.4  determine repository  now support '.' and '_' in its name.
 - 0.0.3  add offline/newest configuration.
