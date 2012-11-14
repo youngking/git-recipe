@@ -45,7 +45,6 @@ class GitRecipe(object):
         if buildout['buildout'].get('offline').lower() == 'true':
             self.update = lambda: ()
         if self.options.get('newest', 'true').lower() == 'false': 
-            self.install = lambda: ()
             self.update = lambda: ()
 
     def git(self, operation, args, quiet=True):
