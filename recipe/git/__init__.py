@@ -17,6 +17,17 @@ as_egg = true
 import logging, os, zc.buildout, subprocess, re, shutil
 
 
+def get_reponame(url):
+    if ":" in url:
+        url = '/' + url.rsplit(":", 1)[1]
+    match = re.search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', url)
+    if match:
+        repo_name = match.groupdict()['repo_name']
+        return repo_name
+    else:
+        raise zc.buildout.UserError('Can not find repository name')
+
+
 class GitRecipe(object):
     '''Simple recipe for fetch code form remote repository, using system git'''
     def __init__(self, buildout, name, options):
@@ -32,19 +43,17 @@ class GitRecipe(object):
             self.ref = options.get('ref', 'origin/master')
 
         self.as_egg = options.get('as_egg', 'false').lower() == 'true'
+        self.options['download-directory'] = options.get('download-directory') or buildout['buildout']['parts-directory']
 
         # determine repository name
-        match = re.search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', self.url)
-        if match:
-            repo_name = match.groupdict()['repo_name']
-            self.repo_path = os.path.join(self.buildout['buildout']['parts-directory'], repo_name)
-        else:
-            raise zc.buildout.UserError('Can not find repository name')
-        self.options['location'] = os.path.join(buildout['buildout']['parts-directory'], self.repo_path)
+        repo_name = get_reponame(self.url)
+        self.repo_path = os.path.join(self.options['download-directory'], repo_name)
+        self.options['location'] = os.path.join(self.options['download-directory'], self.repo_path)
+
         self.paths = options.get('paths', None)
         if buildout['buildout'].get('offline').lower() == 'true':
             self.update = lambda: ()
-        if self.options.get('newest', 'true').lower() == 'false': 
+        if self.options.get('newest', 'true').lower() == 'false':
             self.update = lambda: ()
 
     def git(self, operation, args, quiet=True):
@@ -75,7 +84,7 @@ class GitRecipe(object):
     def install(self):
         '''Clone repository and checkout to version'''
         # go to parts directory
-        os.chdir(self.buildout['buildout']['parts-directory'])
+        os.chdir(self.options['download-directory'])
         _installed = False
 
         try:
@@ -101,7 +110,7 @@ class GitRecipe(object):
 
             # in fact, the install
             if not _installed:
-                os.chdir(self.buildout['buildout']['parts-directory'])
+                os.chdir(self.options['download-directory'])
                 self.git('clone', [self.url, ])
                 # if revision is given, checkout to revision 
                 if 'rev' in self.options:
