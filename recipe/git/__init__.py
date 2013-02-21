@@ -57,7 +57,7 @@ class GitRecipe(object):
         self.options['location'] = os.path.join(self.options['download-directory'], self.repo_path)
 
         self.paths = options.get('paths', None)
-        self.rename
+
 
     def git(self, operation, args, quiet=True):
         if quiet:
@@ -121,7 +121,8 @@ class GitRecipe(object):
 
         except UserError:
             # should manually clean files because buildout thinks that no files created
-            rmtree(self.options['location'])
+            if os.path.exists(self.options['location']):
+                rmtree(self.options['location'])
             raise
 
 
