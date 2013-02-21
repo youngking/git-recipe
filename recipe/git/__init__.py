@@ -46,25 +46,18 @@ class GitRecipe(object):
         if 'repository' not in self.options:
             raise UserError('Repository url must be provided')
         self.url = options['repository']
-        # ref option overrides rev
-        if 'rev' in options:
-            self.ref = options.get('rev', 'origin/master')
-        if 'ref' in options:
-            self.ref = options.get('ref', 'origin/master')
+        self.ref = options.get('ref', 'origin/master')
 
         self.as_egg = options.get('as_egg', 'false').lower() == 'true'
         self.options['download-directory'] = options.get('download-directory') or buildout['buildout']['parts-directory']
 
         # determine repository name
-        repo_name = get_reponame(self.url)
-        self.repo_path = os.path.join(self.options['download-directory'], repo_name)
+        self.repo_name = options.get('repo_name', get_reponame(self.url))
+        self.repo_path = os.path.join(self.options['download-directory'], self.repo_name)
         self.options['location'] = os.path.join(self.options['download-directory'], self.repo_path)
 
         self.paths = options.get('paths', None)
-        if buildout['buildout'].get('offline').lower() == 'true':
-            self.update = lambda: ()
-        if self.options.get('newest', 'true').lower() == 'false':
-            self.update = lambda: ()
+        self.rename
 
     def git(self, operation, args, quiet=True):
         if quiet:
@@ -106,12 +99,11 @@ class GitRecipe(object):
                     _installed = True
                     os.chdir(self.repo_path)
                     self.git('fetch', [self.url, ])
-                    if 'rev' in self.options:
-                        os.chdir(self.options['location'])
-                        self.git('checkout', [self.ref, ])
-                        # return to root directory
-                        os.chdir(self.buildout['buildout']['directory'])
-                        #return self.options['location']
+
+                    os.chdir(self.options['location'])
+                    self.git('checkout', [self.ref, ])
+                    # return to root directory
+                    os.chdir(self.buildout['buildout']['directory'])
 
                 else:
                     # if repository exists but not the same, delete all files there
@@ -121,11 +113,10 @@ class GitRecipe(object):
             # in fact, the install
             if not _installed:
                 os.chdir(self.options['download-directory'])
-                self.git('clone', [self.url, ])
-                # if revision is given, checkout to revision
-                if 'rev' in self.options:
-                    os.chdir(self.options['location'])
-                    self.git('checkout', [self.ref, ])
+                self.git('clone', [self.url, self.repo_name])
+
+                os.chdir(self.options['location'])
+                self.git('checkout', [self.ref, ])
 
 
         except UserError:
@@ -142,13 +133,17 @@ class GitRecipe(object):
 
     def update(self):
         '''Update repository rather than download it again'''
+
+        if buildout['buildout'].get('offline').lower() == 'true' or \
+           self.options.get('newest', 'true').lower() == 'false':
+            return
+
         # go to parts directory
         if self.check_same():
             os.chdir(self.options['location'])
             self.git('fetch', ['origin', ])
             # if revision is given, checkout to revision
-            if 'rev' in self.options:
-                self.git('checkout', [self.ref, ])
+            self.git('checkout', [self.ref, ])
             if self.as_egg:
                 self._install_as_egg()
         else:
