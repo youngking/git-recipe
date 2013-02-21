@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 git-recipe is a small recipe that allows you to use git
-repositories 
+repositories
 
 [buildout]
 parts = data
@@ -14,18 +14,28 @@ as_egg = true
 
 """
 
-import logging, os, zc.buildout, subprocess, re, shutil
+import os
 
+from zc.buildout import easy_install
+from zc.buildout import UserError
+
+from subprocess import Popen
+from subprocess import PIPE
+from shutil import rmtree
+
+from re import search
+from re import findall
+from re import MULTILINE
 
 def get_reponame(url):
     if ":" in url:
         url = '/' + url.rsplit(":", 1)[1]
-    match = re.search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', url)
+    match = search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', url)
     if match:
         repo_name = match.groupdict()['repo_name']
         return repo_name
     else:
-        raise zc.buildout.UserError('Can not find repository name')
+        raise UserError('Can not find repository name')
 
 
 class GitRecipe(object):
@@ -34,7 +44,7 @@ class GitRecipe(object):
         self.options, self.buildout = options, buildout
 
         if 'repository' not in self.options:
-            raise zc.buildout.UserError('Repository url must be provided')
+            raise UserError('Repository url must be provided')
         self.url = options['repository']
         # ref option overrides rev
         if 'rev' in options:
@@ -62,10 +72,10 @@ class GitRecipe(object):
         else:
             command = ['git'] + [operation] + args
 
-        proc = subprocess.Popen(' '.join(command), shell=True, stdout=subprocess.PIPE)
+        proc = Popen(' '.join(command), shell=True, stdout=PIPE)
         status = proc.wait()
         if status:
-            raise zc.buildout.UserError('Error while executing %s' % ' '.join(command))
+            raise UserError('Error while executing %s' % ' '.join(command))
         return proc.stdout.read()
 
     def check_same(self):
@@ -75,7 +85,7 @@ class GitRecipe(object):
         if os.path.exists(self.repo_path) and os.path.exists(os.path.join(self.repo_path, '.git')):
             os.chdir(self.repo_path)
             origin = self.git('remote', ['show', 'origin'], quiet=False)
-            existing_repository = re.findall('^\s*Fetch URL:\s*(.*)$', origin, flags=re.MULTILINE)[0]
+            existing_repository = findall('^\s*Fetch URL:\s*(.*)$', origin, flags=MULTILINE)[0]
 
         os.chdir(old_cwd)
         if existing_repository == self.url:
@@ -105,22 +115,22 @@ class GitRecipe(object):
 
                 else:
                     # if repository exists but not the same, delete all files there
-                    shutil.rmtree(self.repo_path, ignore_errors=True)
+                    rmtree(self.repo_path, ignore_errors=True)
                     _installed = False
 
             # in fact, the install
             if not _installed:
                 os.chdir(self.options['download-directory'])
                 self.git('clone', [self.url, ])
-                # if revision is given, checkout to revision 
+                # if revision is given, checkout to revision
                 if 'rev' in self.options:
                     os.chdir(self.options['location'])
                     self.git('checkout', [self.ref, ])
 
 
-        except zc.buildout.UserError:
+        except UserError:
             # should manually clean files because buildout thinks that no files created
-            shutil.rmtree(self.options['location'])
+            rmtree(self.options['location'])
             raise
 
 
@@ -153,7 +163,7 @@ class GitRecipe(object):
         Install clone as development egg.
         """
         def _install(path, target):
-            zc.buildout.easy_install.develop(path, target)
+            easy_install.develop(path, target)
 
         target = self.buildout['buildout']['develop-eggs-directory']
         if self.paths:
