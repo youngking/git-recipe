@@ -57,7 +57,6 @@ class GitRecipe(object):
         self.options['location'] = os.path.join(self.options['download-directory'], self.repo_path)
 
         self.paths = options.get('paths', None)
-        self.rename
 
     def git(self, operation, args, quiet=True):
         if quiet:
