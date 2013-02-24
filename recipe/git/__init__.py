@@ -135,7 +135,7 @@ class GitRecipe(object):
     def update(self):
         '''Update repository rather than download it again'''
 
-        if buildout['buildout'].get('offline').lower() == 'true' or \
+        if self.buildout['buildout'].get('offline').lower() == 'true' or \
            self.options.get('newest', 'true').lower() == 'false':
             return
 
