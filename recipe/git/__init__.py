@@ -27,6 +27,7 @@ from re import search
 from re import findall
 from re import MULTILINE
 
+
 def get_reponame(url):
     if ":" in url:
         url = '/' + url.rsplit(":", 1)[1]
@@ -49,12 +50,15 @@ class GitRecipe(object):
         self.ref = options.get('ref', 'origin/master')
 
         self.as_egg = options.get('as_egg', 'false').lower() == 'true'
-        self.options['download-directory'] = options.get('download-directory') or buildout['buildout']['parts-directory']
+        self.options['download-directory'] = options.get(
+            'download-directory') or buildout['buildout']['parts-directory']
 
         # determine repository name
         self.repo_name = options.get('repo_name', get_reponame(self.url))
-        self.repo_path = os.path.join(self.options['download-directory'], self.repo_name)
-        self.options['location'] = os.path.join(self.options['download-directory'], self.repo_path)
+        self.repo_path = os.path.join(
+            self.options['download-directory'], self.repo_name)
+        self.options['location'] = os.path.join(
+            self.options['download-directory'], self.repo_path)
 
         self.paths = options.get('paths', None)
 
@@ -77,7 +81,8 @@ class GitRecipe(object):
         if os.path.exists(self.repo_path) and os.path.exists(os.path.join(self.repo_path, '.git')):
             os.chdir(self.repo_path)
             origin = self.git('remote', ['show', 'origin'], quiet=False)
-            existing_repository = findall('^\s*Fetch URL:\s*(.*)$', origin, flags=MULTILINE)[0]
+            existing_repository = findall(
+                '^\s*Fetch URL:\s*(.*)$', origin, flags=MULTILINE)[0]
 
         os.chdir(old_cwd)
         if existing_repository == self.url:
@@ -105,7 +110,8 @@ class GitRecipe(object):
                     os.chdir(self.buildout['buildout']['directory'])
 
                 else:
-                    # if repository exists but not the same, delete all files there
+                    # if repository exists but not the same, delete all files
+                    # there
                     rmtree(self.repo_path, ignore_errors=True)
                     _installed = False
 
@@ -117,12 +123,12 @@ class GitRecipe(object):
                 os.chdir(self.options['location'])
                 self.git('checkout', [self.ref, ])
 
-
         except UserError:
-            # should manually clean files because buildout thinks that no files created
-            rmtree(self.options['location'])
+            # should manually clean files because buildout thinks that no files
+            # created
+            if os.path.exists(self.options['location']):
+                rmtree(self.options['location'])
             raise
-
 
         if self.as_egg:
             self._install_as_egg()
@@ -133,8 +139,8 @@ class GitRecipe(object):
     def update(self):
         '''Update repository rather than download it again'''
 
-        if buildout['buildout'].get('offline').lower() == 'true' or \
-           self.options.get('newest', 'true').lower() == 'false':
+        if self.buildout['buildout'].get('offline').lower() == 'true' or \
+                self.options.get('newest', 'true').lower() == 'false':
             return
 
         # go to parts directory
