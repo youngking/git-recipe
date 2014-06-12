@@ -31,7 +31,7 @@ from re import MULTILINE
 def get_reponame(url):
     if ":" in url:
         url = '/' + url.rsplit(":", 1)[1]
-    match = search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)(.git)$', url)
+    match = search('\/(?P<repo_name>[a-zA-Z0-9-_.]*)$', url)
     if match:
         repo_name = match.groupdict()['repo_name']
         return repo_name
