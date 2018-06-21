@@ -3,11 +3,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="git-recipe",
-    version='0.2.3',
+    version='0.2.4',
     description='Simple buildout recipe for downloading git repositories. It uses system git command and its syntax',
     author='Young King',
     author_email='yanckin@gmail.com',
-    url='http://github.com/youngking/git-recipe',
+    url='http://github.com/sq9mev/git-recipe',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Buildout',
