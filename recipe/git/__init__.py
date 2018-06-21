@@ -68,7 +68,8 @@ class GitRecipe(object):
         else:
             command = ['git'] + [operation] + args
 
-        proc = Popen(' '.join(command), shell=True, stdout=PIPE)
+        proc = Popen(' '.join(command), shell=True, stdout=PIPE,
+                universal_newlines=True)
         status = proc.wait()
         if status:
             raise UserError('Error while executing %s' % ' '.join(command))
