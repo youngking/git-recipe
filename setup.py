@@ -7,7 +7,7 @@ setup(
     description='Simple buildout recipe for downloading git repositories. It uses system git command and its syntax',
     author='Young King',
     author_email='yanckin@gmail.com',
-    url='http://github.com/sq9mev/git-recipe',
+    url='http://github.com/wayhome/git-recipe',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Buildout',
