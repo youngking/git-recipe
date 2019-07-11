@@ -77,16 +77,13 @@ class GitRecipe(object):
 
     def check_same(self):
         old_cwd = os.getcwd()
-        existing_repository = None
 
         if os.path.exists(self.repo_path) and os.path.exists(os.path.join(self.repo_path, '.git')):
             os.chdir(self.repo_path)
-            origin = self.git('remote', ['show', 'origin'], quiet=False)
-            existing_repository = findall(
-                '^\s*Fetch URL:\s*(.*)$', origin, flags=MULTILINE)[0]
+            origin = self.git('remote', ['get-url', 'origin'], quiet=False)
 
         os.chdir(old_cwd)
-        if existing_repository == self.url:
+        if origin == self.url:
             return True
 
     def install(self):
