@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="git-recipe",
-    version='0.2.6',
+    version='0.2.7',
     description='Simple buildout recipe for downloading git repositories. It uses system git command and its syntax',
     author='Young King',
     author_email='yanckin@gmail.com',
