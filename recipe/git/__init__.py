@@ -80,7 +80,12 @@ class GitRecipe(object):
 
         if os.path.exists(self.repo_path) and os.path.exists(os.path.join(self.repo_path, '.git')):
             os.chdir(self.repo_path)
-            origin = self.git('remote', ['get-url', 'origin'], quiet=False)
+            try:
+                origin = self.git('remote', ['get-url', 'origin'], quiet=False)
+            except:
+                # Git before version 2.7.0
+                origin = self.git('remote', ['-v'], quiet=False)
+                origin = findall('^origin\ \ (.*)\ \(fetch\)$', origin, flags=MULTILINE)[0]
 
         os.chdir(old_cwd)
         if origin == self.url:
