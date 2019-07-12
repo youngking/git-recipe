@@ -85,7 +85,7 @@ class GitRecipe(object):
             except:
                 # Git before version 2.7.0
                 origin = self.git('remote', ['-v'], quiet=False)
-                origin = findall('^origin\ \ (.*)\ \(fetch\)$', origin, flags=MULTILINE)[0]
+                origin = findall('^origin\s*(.*)\s*\(fetch\)$', origin, flags=MULTILINE)[0]
 
         os.chdir(old_cwd)
         if origin == self.url:
