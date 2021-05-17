@@ -16,6 +16,7 @@ as_egg = true
 
 import os
 
+from zc.buildout import buildout
 from zc.buildout import easy_install
 from zc.buildout import UserError
 
@@ -26,6 +27,10 @@ from shutil import rmtree
 from re import search
 from re import findall
 from re import MULTILINE
+
+
+if '.git' not in buildout.ignore_directories:
+    buildout.ignore_directories += ('.git',)
 
 
 def get_reponame(url):
