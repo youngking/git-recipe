@@ -16,6 +16,7 @@ as_egg = true
 
 import os
 
+from zc.buildout import buildout
 from zc.buildout import easy_install
 from zc.buildout import UserError
 
@@ -26,6 +27,10 @@ from shutil import rmtree
 from re import search
 from re import findall
 from re import MULTILINE
+
+
+if '.git' not in buildout.ignore_directories:
+    buildout.ignore_directories += ('.git',)
 
 
 def get_reponame(url):
@@ -81,11 +86,11 @@ class GitRecipe(object):
         if os.path.exists(self.repo_path) and os.path.exists(os.path.join(self.repo_path, '.git')):
             os.chdir(self.repo_path)
             try:
-                origin = self.git('remote', ['get-url', 'origin'], quiet=False)
-            except:
+                origin = self.git('remote', ['get-url', 'origin'], quiet=False).rstrip()
+            except Exception:
                 # Git before version 2.7.0
                 origin = self.git('remote', ['-v'], quiet=False)
-                origin = findall('^origin\s*(.*)\s*\(fetch\)$', origin, flags=MULTILINE)[0]
+                origin = findall('^origin\s*(.*)\s*\(fetch\)$', origin, flags=MULTILINE)[0].rstrip()
 
         os.chdir(old_cwd)
         if origin == self.url:
